@@ -24,11 +24,17 @@ def main() -> None:
             print(f"Searching for: {args.query}")
             
             data = load_movies_data()
-            query_clean = clean_text_of_punctuation(args.query)
+            query_tokens = set(clean_text_of_punctuation(args.query).split())
             
             for movie in data.get("movies", []):
-                title_clean = clean_text_of_punctuation(movie.get('title', ''))
-                if query_clean in title_clean:
+                title_tokens = set(clean_text_of_punctuation(movie.get('title', '')).split())
+                
+                match_found = any(
+                    q_token in t_token
+                    for q_token in query_tokens
+                    for t_token in title_tokens
+                )
+                if match_found:
                     res.append(movie)
             
             sorted_res = sorted(res, key=lambda movie: int(movie['id']))
