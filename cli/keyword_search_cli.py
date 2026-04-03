@@ -6,6 +6,7 @@ sys.path.append(str(root_dir))
 
 import argparse
 from utils.load_data import load_movies_data
+from utils.preprocess import clean_text_of_punctuation
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -23,10 +24,11 @@ def main() -> None:
             print(f"Searching for: {args.query}")
             
             data = load_movies_data()
-            
+            query_clean = clean_text_of_punctuation(args.query)
             
             for movie in data.get("movies", []):
-                if args.query.lower() in movie.get('title', '').lower():
+                title_clean = clean_text_of_punctuation(movie.get('title', ''))
+                if query_clean in title_clean:
                     res.append(movie)
             
             sorted_res = sorted(res, key=lambda movie: int(movie['id']))
