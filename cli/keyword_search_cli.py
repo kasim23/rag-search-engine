@@ -8,6 +8,7 @@ import argparse
 from utils.load_data import load_movies_data, read_stop_words
 from utils.preprocess import clean_text_of_punctuation
 from nltk.stem import PorterStemmer
+from utils.inverted_index import InvertedIndex
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -15,6 +16,8 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
+    
+    build_parser = subparsers.add_parser("build", help="Build and save inverted index")
 
     args = parser.parse_args()
     
@@ -49,6 +52,20 @@ def main() -> None:
             sorted_res = sorted(res, key=lambda movie: int(movie['id']))
             for i, movie in enumerate(sorted_res[:5], 1):
                 print(f"{i}. {movie['title']}")
+        
+        case "build":
+            data = load_movies_data()
+            movies = data.get("movies", [])
+            
+            idx = InvertedIndex()
+            idx.build(movies)
+            idx.save()
+            
+            merida_docs = idx.get_documents("merida")
+            if merida_docs:
+                print(f"Build complete. First document ID for 'merida': {merida_docs[0]}")
+            else:
+                print("Build complete, but no documents found for token 'merida'.")
     
         case _:
             parser.print_help()
